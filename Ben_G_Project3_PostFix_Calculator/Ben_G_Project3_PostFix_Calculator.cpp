@@ -2,19 +2,80 @@
 //
 
 #include <iostream>
+#include <stack>
+#include <string>
+#include <sstream>
+using namespace std;
 
-int main()
-{
-    std::cout << "Hello World!\n";
+bool isOperator(char c) { // checks if the char is an operator
+    return (c == '+' || c == '*');
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+int calculate(int operand1, int operand2, char op) { // performs the computation 
+    if (op == '+') {
+        return operand1 + operand2;
+    }
+    else if (op == '*') {
+        return operand1 * operand2;
+    }
+    return 0;  // Invalid operator
+}
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+int evaluate(const string& equation) {// parses through string and evaluates the entries 
+    stack<int> numStack;
+    istringstream iss(equation);
+    string subString;
+    while (iss >> subString) {
+        if (isdigit(subString[0])) {
+            numStack.push(stoi(subString));
+        }
+        else if (isOperator(subString[0])) {
+            if (numStack.size() < 2) {
+                cout << "Invalid expression, please adjust." << endl;
+                return 0;  // checks for operands
+            }
+            int operand2 = numStack.top();
+            numStack.pop();
+            int operand1 = numStack.top();
+            numStack.pop();
+            int result = calculate(operand1, operand2, subString[0]);
+            numStack.push(result);
+        }
+    }
+    if (numStack.size() != 1) {
+        cout << "Invalid expression." << endl;
+        return 0;  // checks for valid input
+    }
+    return numStack.top();
+}
+
+int main() {
+    cout << "Enter the equation you would like to calculate in postfix notation" << endl
+        << "Only evaluate * and + operations" << endl
+        << "Enter '=' when done writing the equation, and 'q' to quit" << endl;
+
+    while (true) {
+        string user;
+        getline(cin, user);
+
+        if (user.empty()) {
+            cout << "Please include an input." << endl; // checks if initial input is empty
+            continue;
+        }
+        if (user == "q" || user == "Q") { // exists the program
+            cout << "Goodbye!" << endl;
+            return 0;
+        }
+        if (user.find('=') != user.length() - 1) { // ensures the = is at the end 
+            cout << "Invalid expression: please include a single = at the end." << endl;
+            continue;
+        }
+
+        string postfix = user.substr(0, user.length() - 1);  // Remove '='
+        int answer = evaluate(postfix);
+        cout << "Result: " << answer << endl;
+    }
+
+    return 0;
+}
+
